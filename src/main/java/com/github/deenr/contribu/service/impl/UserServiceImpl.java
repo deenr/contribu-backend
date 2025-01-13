@@ -1,10 +1,11 @@
 package com.github.deenr.contribu.service.impl;
 
+import com.github.deenr.contribu.exception.EmailAlreadyInUseException;
 import com.github.deenr.contribu.model.User;
 import com.github.deenr.contribu.repository.UserRepository;
 import com.github.deenr.contribu.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -13,18 +14,18 @@ import java.util.Optional;
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public User registerUser(String email, String password) {
+    public User register(String email, String password) {
         if (userRepository.findByEmail(email).isPresent()) {
-            throw new IllegalArgumentException("Email is already in use.");
+            throw new EmailAlreadyInUseException("Email is already in use.");
         }
 
         User user = new User();

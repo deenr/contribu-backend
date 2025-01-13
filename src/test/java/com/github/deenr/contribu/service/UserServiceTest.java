@@ -10,7 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
@@ -20,13 +20,13 @@ public class UserServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private BCryptPasswordEncoder encoder;
+    private PasswordEncoder encoder;
 
     @InjectMocks
     private UserServiceImpl userService;
 
     @Test
-    public void registerUser_Success() {
+    public void register_Success() {
         String email = "email@google.com";
         String password = "password123";
         String hashedPassword = "mock_encryption";
@@ -35,7 +35,7 @@ public class UserServiceTest {
         Mockito.when(encoder.encode(password)).thenReturn(hashedPassword);
         Mockito.when(userRepository.save(Mockito.any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        User user = userService.registerUser(email, password);
+        User user = userService.register(email, password);
 
         Assertions.assertEquals(email, user.getEmail());
         Assertions.assertEquals(hashedPassword, user.getPassword());
@@ -46,7 +46,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void registerUser_EmailAlreadyExists_ThrowsException() {
+    public void register_EmailAlreadyExists_ThrowsException() {
         String email = "email@google.com";
         String password = "password123";
 
@@ -57,7 +57,7 @@ public class UserServiceTest {
 
         IllegalArgumentException exception = Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> userService.registerUser(email, password)
+                () -> userService.register(email, password)
         );
         Assertions.assertEquals("Email is already in use.", exception.getMessage());
 
