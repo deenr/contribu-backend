@@ -2,7 +2,9 @@ package com.github.deenr.contribu.service;
 
 import com.github.deenr.contribu.model.User;
 
+import java.util.Optional;
+
 public interface UserService {
-    User register(String email, String password);
-    boolean authenticate(String email, String password);
+    String register(String email, String password);
+    String login(String email, String password);
 }

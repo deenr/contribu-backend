@@ -21,12 +21,12 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody @Valid UserCreationDTO userDTO) {
+    public ResponseEntity<String> register(@RequestBody @Valid UserCreationDTO userDTO) {
         return new ResponseEntity<>(userService.register(userDTO.getEmail(), userDTO.getPassword()), HttpStatus.OK);
     }
 
-    @PostMapping("/authenticate")
-    public ResponseEntity<Boolean> authenticate(@RequestBody @Valid UserAuthenticationDTO userDTO) {
-        return new ResponseEntity<>(userService.authenticate(userDTO.getEmail(), userDTO.getPassword()), HttpStatus.OK);
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody @Valid UserAuthenticationDTO userDTO) {
+        return new ResponseEntity<>(userService.login(userDTO.getEmail(), userDTO.getPassword()), HttpStatus.OK);
     }
 }
