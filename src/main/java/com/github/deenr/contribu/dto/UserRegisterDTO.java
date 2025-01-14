@@ -1,6 +1,6 @@
 package com.github.deenr.contribu.dto;
 
-public class UserAuthenticationDTO {
+public class UserRegisterDTO {
     private String email;
     private String password;
 
