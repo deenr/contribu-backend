@@ -23,12 +23,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String register(String email, String password) {
+    public String register(String firstName, String lastName, String email, String password) {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new EmailAlreadyInUseException("Email is already in use.");
         }
 
         User user = new User();
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
         user.setCreatedAt(LocalDateTime.now());

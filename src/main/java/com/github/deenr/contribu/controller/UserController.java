@@ -2,7 +2,6 @@ package com.github.deenr.contribu.controller;
 
 import com.github.deenr.contribu.dto.UserAuthenticationDTO;
 import com.github.deenr.contribu.dto.UserCreationDTO;
-import com.github.deenr.contribu.model.User;
 import com.github.deenr.contribu.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +21,19 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody @Valid UserCreationDTO userDTO) {
-        return new ResponseEntity<>(userService.register(userDTO.getEmail(), userDTO.getPassword()), HttpStatus.OK);
+        return new ResponseEntity<>(userService.register(
+            userDTO.getFirstName(),
+            userDTO.getLastName(),
+            userDTO.getEmail(),
+            userDTO.getPassword()
+        ), HttpStatus.OK);
     }
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody @Valid UserAuthenticationDTO userDTO) {
-        return new ResponseEntity<>(userService.login(userDTO.getEmail(), userDTO.getPassword()), HttpStatus.OK);
+        return new ResponseEntity<>(userService.login(
+            userDTO.getEmail(),
+            userDTO.getPassword()
+        ), HttpStatus.OK);
     }
 }
