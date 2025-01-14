@@ -1,7 +1,7 @@
 package com.github.deenr.contribu.config;
 
 import com.github.deenr.contribu.security.JwtAuthenticationFilter;
-import com.github.deenr.contribu.security.JwtUtil;
+import com.github.deenr.contribu.service.JwtService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -63,7 +63,7 @@ public class WebConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
-        JwtAuthenticationFilter jwtAuthFilter = new JwtAuthenticationFilter(authenticationManager, JwtUtil.SECRET_KEY);
+        JwtAuthenticationFilter jwtAuthFilter = new JwtAuthenticationFilter(authenticationManager, JwtService.TOKEN_KEY);
 
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))

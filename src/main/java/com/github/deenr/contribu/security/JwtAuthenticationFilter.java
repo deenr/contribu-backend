@@ -1,7 +1,6 @@
 package com.github.deenr.contribu.security;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureException;
+import com.github.deenr.contribu.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,7 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = extractToken(request);
         if (token != null && !isTokenExpired(token)) {
-            String username = JwtUtil.extractUsername(token);
+            String username = JwtService.extractUsername(token);
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, null);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
@@ -42,6 +41,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean isTokenExpired(String token) {
-        return JwtUtil.isTokenExpired(token);
+        return JwtService.isTokenExpired(token);
     }
 }
