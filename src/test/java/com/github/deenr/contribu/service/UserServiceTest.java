@@ -1,5 +1,6 @@
 package com.github.deenr.contribu.service;
 
+import com.github.deenr.contribu.exception.EmailAlreadyInUseException;
 import com.github.deenr.contribu.model.User;
 import com.github.deenr.contribu.repository.UserRepository;
 import com.github.deenr.contribu.service.impl.UserServiceImpl;
@@ -27,6 +28,8 @@ public class UserServiceTest {
 
     @Test
     public void register_Success() {
+        String firstName = "John";
+        String lastName = "Doe";
         String email = "email@google.com";
         String password = "password123";
         String hashedPassword = "mock_encryption";
@@ -35,18 +38,20 @@ public class UserServiceTest {
         Mockito.when(encoder.encode(password)).thenReturn(hashedPassword);
         Mockito.when(userRepository.save(Mockito.any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        User user = userService.register(email, password);
+        String token = userService.register(firstName, lastName, email, password);
 
-        Assertions.assertEquals(email, user.getEmail());
-        Assertions.assertEquals(hashedPassword, user.getPassword());
+        Assertions.assertNotNull(token);
 
         Mockito.verify(userRepository).findByEmail(email);
         Mockito.verify(encoder).encode(password);
-        Mockito.verify(userRepository).save(Mockito.any(User.class));
+        // TODO VERIFY TOKEN GENERATION
+        Mockito.verify(encoder).encode(password);
     }
 
     @Test
     public void register_EmailAlreadyExists_ThrowsException() {
+        String firstName = "John";
+        String lastName = "Doe";
         String email = "email@google.com";
         String password = "password123";
 
@@ -55,9 +60,9 @@ public class UserServiceTest {
 
         Mockito.when(userRepository.findByEmail(email)).thenReturn(Optional.of(existingUser));
 
-        IllegalArgumentException exception = Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> userService.register(email, password)
+        RuntimeException exception = Assertions.assertThrows(
+                EmailAlreadyInUseException.class,
+                () -> userService.register(firstName, lastName, email, password)
         );
         Assertions.assertEquals("Email is already in use.", exception.getMessage());
 
@@ -67,7 +72,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void authenticate_Success() {
+    public void login_Success() {
         String email = "email@google.com";
         String password = "password123";
         String hashedPassword = "mock_encryption";
@@ -79,11 +84,13 @@ public class UserServiceTest {
         Mockito.when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         Mockito.when(encoder.matches(password, hashedPassword)).thenReturn(true);
 
-        boolean authenticated = userService.authenticate(email, password);
-        Assertions.assertTrue(authenticated);
+        String token = userService.login(email, password);
+
+        Assertions.assertNotNull(token);
 
         Mockito.verify(userRepository).findByEmail(email);
         Mockito.verify(encoder).matches(password, hashedPassword);
+        // TODO VERIFY TOKEN GENERATION
     }
 
     @Test
@@ -99,9 +106,12 @@ public class UserServiceTest {
         Mockito.when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         Mockito.when(encoder.matches(password, hashedPassword)).thenReturn(false);
 
-        boolean authenticated = userService.authenticate(email, password);
+        RuntimeException exception = Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> userService.login(email, password)
+        );
+        Assertions.assertEquals("Invalid credentials", exception.getMessage());
 
-        Assertions.assertFalse(authenticated);
         Mockito.verify(userRepository).findByEmail(email);
         Mockito.verify(encoder).matches(password, hashedPassword);
     }
