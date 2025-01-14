@@ -1,8 +1,14 @@
 package com.github.deenr.contribu.controller;
 
-import com.github.deenr.contribu.dto.UserAuthenticationDTO;
-import com.github.deenr.contribu.dto.UserCreationDTO;
+import com.github.deenr.contribu.dto.UserLoginResponseDTO;
+import com.github.deenr.contribu.dto.UserRegisterDTO;
+import com.github.deenr.contribu.dto.UserLoginDTO;
+import com.github.deenr.contribu.dto.UserRegisterResponseDTO;
+import com.github.deenr.contribu.model.AccessAndRefreshToken;
+import com.github.deenr.contribu.service.JwtService;
 import com.github.deenr.contribu.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,20 +26,35 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody @Valid UserCreationDTO userDTO) {
-        return new ResponseEntity<>(userService.register(
-            userDTO.getFirstName(),
-            userDTO.getLastName(),
-            userDTO.getEmail(),
-            userDTO.getPassword()
-        ), HttpStatus.OK);
+    public ResponseEntity<UserRegisterResponseDTO> register(@RequestBody @Valid UserLoginDTO userDTO, HttpServletResponse response) {
+        AccessAndRefreshToken tokens = userService.register(
+                userDTO.getFirstName(),
+                userDTO.getLastName(),
+                userDTO.getEmail(),
+                userDTO.getPassword()
+        );
+
+        setRefreshTokenCookie(tokens.getRefreshToken(), response);
+
+        return new ResponseEntity<>(new UserRegisterResponseDTO(tokens.getAccessToken()), HttpStatus.OK);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody @Valid UserAuthenticationDTO userDTO) {
-        return new ResponseEntity<>(userService.login(
-            userDTO.getEmail(),
-            userDTO.getPassword()
-        ), HttpStatus.OK);
+    public ResponseEntity<UserLoginResponseDTO> login(@RequestBody @Valid UserRegisterDTO userDTO, HttpServletResponse response) {
+        AccessAndRefreshToken tokens = userService.login(
+                userDTO.getEmail(),
+                userDTO.getPassword()
+        );
+
+        setRefreshTokenCookie(tokens.getRefreshToken(), response);
+
+        return new ResponseEntity<>(new UserLoginResponseDTO(tokens.getAccessToken()), HttpStatus.OK);
+    }
+
+    void setRefreshTokenCookie(String refreshToken, HttpServletResponse response) {
+        Cookie cookie = new Cookie("refreshToken", refreshToken);
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(Long.valueOf(JwtService.REFRESH_TOKEN_EXPIRATION).intValue());
+        response.addCookie(cookie);
     }
 }

@@ -1,6 +1,7 @@
 package com.github.deenr.contribu.service;
 
 import com.github.deenr.contribu.exception.EmailAlreadyInUseException;
+import com.github.deenr.contribu.model.AccessAndRefreshToken;
 import com.github.deenr.contribu.model.User;
 import com.github.deenr.contribu.repository.UserRepository;
 import com.github.deenr.contribu.service.impl.UserServiceImpl;
@@ -38,9 +39,10 @@ public class UserServiceTest {
         Mockito.when(encoder.encode(password)).thenReturn(hashedPassword);
         Mockito.when(userRepository.save(Mockito.any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        String token = userService.register(firstName, lastName, email, password);
+        AccessAndRefreshToken tokens = userService.register(firstName, lastName, email, password);
 
-        Assertions.assertNotNull(token);
+        Assertions.assertNotNull(tokens.getAccessToken());
+        Assertions.assertNotNull(tokens.getRefreshToken());
 
         Mockito.verify(userRepository).findByEmail(email);
         Mockito.verify(encoder).encode(password);
@@ -84,9 +86,10 @@ public class UserServiceTest {
         Mockito.when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         Mockito.when(encoder.matches(password, hashedPassword)).thenReturn(true);
 
-        String token = userService.login(email, password);
+        AccessAndRefreshToken tokens = userService.login(email, password);
 
-        Assertions.assertNotNull(token);
+        Assertions.assertNotNull(tokens.getAccessToken());
+        Assertions.assertNotNull(tokens.getRefreshToken());
 
         Mockito.verify(userRepository).findByEmail(email);
         Mockito.verify(encoder).matches(password, hashedPassword);
