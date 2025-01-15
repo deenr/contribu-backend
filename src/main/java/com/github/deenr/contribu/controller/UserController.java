@@ -8,6 +8,7 @@ import com.github.deenr.contribu.model.AccessAndRefreshToken;
 import com.github.deenr.contribu.service.JwtService;
 import com.github.deenr.contribu.service.UserService;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +16,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/auth")
 public class UserController {
+    public static final String REFRESH_COOKIE = "refresh_token";
     private final UserService userService;
 
     @Autowired
@@ -51,10 +55,42 @@ public class UserController {
         return new ResponseEntity<>(new UserLoginResponseDTO(tokens.getAccessToken()), HttpStatus.OK);
     }
 
+    @GetMapping("/refresh")
+    public ResponseEntity<String> refresh(HttpServletRequest request) {
+        Optional<Cookie> cookie = getRefreshCookie(request.getCookies());
+
+        if (cookie.isEmpty()) {
+           return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        String refreshToken = cookie.get().getValue();
+
+        if (JwtService.isTokenExpired(refreshToken)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        String email = JwtService.extractUsername(refreshToken);
+        return new ResponseEntity<>(JwtService.generateAccessToken(email), HttpStatus.OK);
+
+    }
+
     void setRefreshTokenCookie(String refreshToken, HttpServletResponse response) {
-        Cookie cookie = new Cookie("refreshToken", refreshToken);
+        Cookie cookie = new Cookie(REFRESH_COOKIE, refreshToken);
         cookie.setHttpOnly(true);
-        cookie.setMaxAge(Long.valueOf(JwtService.REFRESH_TOKEN_EXPIRATION).intValue());
+        cookie.setSecure(true);
+        cookie.setMaxAge((int) (JwtService.REFRESH_TOKEN_EXPIRATION / 1000));
+        cookie.setPath("/");
+
         response.addCookie(cookie);
+    }
+
+    Optional<Cookie> getRefreshCookie(Cookie[] cookies) {
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals(REFRESH_COOKIE)) {
+                return Optional.of(cookie);
+            }
+        }
+
+        return Optional.empty();
     }
 }
