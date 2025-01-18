@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -23,6 +25,9 @@ public class User {
 
     @Column(nullable = false)
     private String password;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GitProviderToken> gitProviderTokens = new ArrayList<>();
 
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -66,6 +71,10 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public List<GitProviderToken> getGitProviderTokens() {
+        return gitProviderTokens;
     }
 
     public LocalDateTime getCreatedAt() {

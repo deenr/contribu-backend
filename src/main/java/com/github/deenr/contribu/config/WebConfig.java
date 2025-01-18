@@ -1,8 +1,8 @@
 package com.github.deenr.contribu.config;
 
-import com.github.deenr.contribu.controller.UserController;
 import com.github.deenr.contribu.security.JwtAuthenticationFilter;
 import com.github.deenr.contribu.service.JwtService;
+import com.github.deenr.contribu.util.RefreshTokenUtil;
 import jakarta.servlet.http.Cookie;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -74,25 +74,31 @@ public class WebConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/error").permitAll()
-                        .anyRequest().authenticated()
+                    .requestMatchers("/auth/**", "/error").permitAll()
+                    .anyRequest().authenticated()
                 )
                 .logout((logout) -> logout
-                        .logoutUrl("/auth/logout")
-                        .addLogoutHandler((request, response, authentication) -> {
-                            Cookie cookie = new Cookie(UserController.REFRESH_COOKIE, "");
-                            cookie.setHttpOnly(true);
-                            cookie.setSecure(true);
-                            cookie.setMaxAge((int) (JwtService.REFRESH_TOKEN_EXPIRATION / 1000));
-                            cookie.setPath("/");
+                    .logoutUrl("/auth/logout")
+                    .addLogoutHandler((request, response, authentication) -> {
+                        Cookie cookie = new Cookie(RefreshTokenUtil.REFRESH_COOKIE, "");
+                        cookie.setHttpOnly(true);
+                        cookie.setSecure(true);
+                        cookie.setMaxAge((int) (JwtService.REFRESH_TOKEN_EXPIRATION / 1000));
+                        cookie.setPath("/");
 
-                            response.addCookie(cookie);
-                        })
-                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK))
-                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK))
+                        response.addCookie(cookie);
+                    })
+                    .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK))
+                    .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK))
                 )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .exceptionHandling(exc -> exc
+                    .authenticationEntryPoint((request, response, authException) -> {
+                        response.setStatus(HttpStatus.FORBIDDEN.value());
+                        response.getWriter().write("Forbidden");
+                    })
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .httpBasic(withDefaults());

@@ -6,32 +6,35 @@ import com.github.deenr.contribu.dto.UserLoginDTO;
 import com.github.deenr.contribu.dto.UserRegisterResponseDTO;
 import com.github.deenr.contribu.model.AccessAndRefreshToken;
 import com.github.deenr.contribu.service.JwtService;
-import com.github.deenr.contribu.service.UserService;
+import com.github.deenr.contribu.service.AuthService;
+import com.github.deenr.contribu.util.RefreshTokenUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
-public class UserController {
-    public static final String REFRESH_COOKIE = "refresh_token";
-    private final UserService userService;
+public class AuthController {
+    private final AuthService authService;
 
     @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     @PostMapping("/register")
     public ResponseEntity<UserRegisterResponseDTO> register(@RequestBody @Valid UserLoginDTO userDTO, HttpServletResponse response) {
-        AccessAndRefreshToken tokens = userService.register(
+        AccessAndRefreshToken tokens = authService.register(
                 userDTO.getFirstName(),
                 userDTO.getLastName(),
                 userDTO.getEmail(),
@@ -45,19 +48,20 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponseDTO> login(@RequestBody @Valid UserRegisterDTO userDTO, HttpServletResponse response) {
-        AccessAndRefreshToken tokens = userService.login(
+        AccessAndRefreshToken tokens = authService.login(
                 userDTO.getEmail(),
                 userDTO.getPassword()
         );
 
-        setRefreshTokenCookie(tokens.getRefreshToken(), response);
+        String token = tokens.getRefreshToken();
+        setRefreshTokenCookie(token, response);
 
         return new ResponseEntity<>(new UserLoginResponseDTO(tokens.getAccessToken()), HttpStatus.OK);
     }
 
     @GetMapping("/refresh")
     public ResponseEntity<String> refresh(HttpServletRequest request) {
-        Optional<Cookie> cookie = getRefreshCookie(request.getCookies());
+        Optional<Cookie> cookie = RefreshTokenUtil.getRefreshCookie(request.getCookies());
 
         if (cookie.isEmpty()) {
            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -71,26 +75,15 @@ public class UserController {
 
         String email = JwtService.extractUsername(refreshToken);
         return new ResponseEntity<>(JwtService.generateAccessToken(email), HttpStatus.OK);
-
     }
 
     void setRefreshTokenCookie(String refreshToken, HttpServletResponse response) {
-        Cookie cookie = new Cookie(REFRESH_COOKIE, refreshToken);
+        Cookie cookie = new Cookie(RefreshTokenUtil.REFRESH_COOKIE, refreshToken);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setMaxAge((int) (JwtService.REFRESH_TOKEN_EXPIRATION / 1000));
         cookie.setPath("/");
 
         response.addCookie(cookie);
-    }
-
-    Optional<Cookie> getRefreshCookie(Cookie[] cookies) {
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(REFRESH_COOKIE)) {
-                return Optional.of(cookie);
-            }
-        }
-
-        return Optional.empty();
     }
 }

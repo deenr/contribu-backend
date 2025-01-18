@@ -4,7 +4,7 @@ import com.github.deenr.contribu.exception.EmailAlreadyInUseException;
 import com.github.deenr.contribu.model.AccessAndRefreshToken;
 import com.github.deenr.contribu.model.User;
 import com.github.deenr.contribu.repository.UserRepository;
-import com.github.deenr.contribu.service.impl.UserServiceImpl;
+import com.github.deenr.contribu.service.impl.AuthServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceTest {
+public class AuthServiceTest {
     @Mock
     private UserRepository userRepository;
 
@@ -25,7 +25,7 @@ public class UserServiceTest {
     private PasswordEncoder encoder;
 
     @InjectMocks
-    private UserServiceImpl userService;
+    private AuthServiceImpl userService;
 
     @Test
     public void register_Success() {

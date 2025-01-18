@@ -1,8 +1,10 @@
 package com.github.deenr.contribu.service;
 
-import com.github.deenr.contribu.model.AccessAndRefreshToken;
+import com.github.deenr.contribu.model.User;
+
+import java.util.Optional;
 
 public interface UserService {
-    AccessAndRefreshToken register(String firstName, String lastName, String email, String password);
-    AccessAndRefreshToken login(String email, String password);
+    User save(User user);
+    Optional<User> findByEmail(String email);
 }
