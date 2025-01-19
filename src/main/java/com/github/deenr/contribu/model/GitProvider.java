@@ -1,13 +1,12 @@
 package com.github.deenr.contribu.model;
 
-import com.github.deenr.contribu.enums.GitProvider;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "git_provider_token")
-public class GitProviderToken {
+@Table(name = "git_provider")
+public class GitProvider {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,7 +17,7 @@ public class GitProviderToken {
 
     @Column
     @Enumerated(EnumType.STRING)
-    private GitProvider provider;
+    private com.github.deenr.contribu.enums.GitProvider provider;
 
     private LocalDateTime syncedAt;
 
@@ -41,11 +40,11 @@ public class GitProviderToken {
         this.user = user;
     }
 
-    public GitProvider getProvider() {
+    public com.github.deenr.contribu.enums.GitProvider getProvider() {
         return provider;
     }
 
-    public void setProvider(GitProvider provider) {
+    public void setProvider(com.github.deenr.contribu.enums.GitProvider provider) {
         this.provider = provider;
     }
 

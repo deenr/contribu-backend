@@ -27,7 +27,7 @@ public class User {
     private String password;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<GitProviderToken> gitProviderTokens = new ArrayList<>();
+    private List<GitProvider> gitProviders = new ArrayList<>();
 
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -73,8 +73,8 @@ public class User {
         this.password = password;
     }
 
-    public List<GitProviderToken> getGitProviderTokens() {
-        return gitProviderTokens;
+    public List<GitProvider> getGitProviders() {
+        return gitProviders;
     }
 
     public LocalDateTime getCreatedAt() {

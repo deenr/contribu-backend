@@ -32,10 +32,10 @@ public class GithubOAuthServiceImpl implements OAuthService {
     private String authUrl;
 
     private final UserServiceImpl userService;
-    private final GitProviderTokenServiceImpl gitProviderTokenService;
+    private final GitProviderServiceImpl gitProviderTokenService;
 
     @Autowired
-    GithubOAuthServiceImpl(UserServiceImpl userService, GitProviderTokenServiceImpl gitProviderTokenService) {
+    GithubOAuthServiceImpl(UserServiceImpl userService, GitProviderServiceImpl gitProviderTokenService) {
         this.userService = userService;
         this.gitProviderTokenService = gitProviderTokenService;
     }

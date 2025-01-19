@@ -1,7 +1,7 @@
 package com.github.deenr.contribu.controller;
 
-import com.github.deenr.contribu.dto.ProviderStatusDTO;
-import com.github.deenr.contribu.service.GitProviderTokenService;
+import com.github.deenr.contribu.dto.GitProviderStatusDTO;
+import com.github.deenr.contribu.service.GitProviderService;
 import com.github.deenr.contribu.service.JwtService;
 import com.github.deenr.contribu.util.RefreshTokenUtil;
 import jakarta.servlet.http.Cookie;
@@ -16,12 +16,12 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/providers")
-public class GitProviderTokenController {
-    private final GitProviderTokenService gitProviderTokenService;
+public class GitProviderController {
+    private final GitProviderService gitProviderService;
 
     @Autowired
-    public GitProviderTokenController(GitProviderTokenService gitProviderTokenService) {
-        this.gitProviderTokenService = gitProviderTokenService;
+    public GitProviderController(GitProviderService gitProviderService) {
+        this.gitProviderService = gitProviderService;
     }
 
     @GetMapping("/status")
@@ -39,7 +39,7 @@ public class GitProviderTokenController {
         }
 
 
-        List<ProviderStatusDTO> statuses = gitProviderTokenService.getAllProviderStatuses(email);
+        List<GitProviderStatusDTO> statuses = gitProviderService.getAllProviderStatuses(email);
         return ResponseEntity.ok(statuses);
     }
 }
