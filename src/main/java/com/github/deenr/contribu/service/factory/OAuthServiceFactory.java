@@ -1,5 +1,6 @@
 package com.github.deenr.contribu.service.factory;
 
+import com.github.deenr.contribu.exception.ProviderNotSupportedException;
 import com.github.deenr.contribu.service.OAuthService;
 import com.github.deenr.contribu.service.impl.GithubOAuthServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ public class OAuthServiceFactory {
         if (provider.equalsIgnoreCase("github")) {
             return githubOAuthService;
         }
-        throw new IllegalArgumentException("Unknown provider: " + provider);
+
+        throw new ProviderNotSupportedException(provider);
     }
 }

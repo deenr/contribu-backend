@@ -1,5 +1,6 @@
 package com.github.deenr.contribu.controller;
 
+import com.github.deenr.contribu.exception.ProviderNotSupportedException;
 import com.github.deenr.contribu.service.JwtService;
 import com.github.deenr.contribu.service.OAuthService;
 import com.github.deenr.contribu.service.factory.OAuthServiceFactory;
@@ -22,6 +23,11 @@ public class OAuthController {
     @Autowired
     public OAuthController(OAuthServiceFactory oAuthServiceFactory) {
         this.oAuthServiceFactory = oAuthServiceFactory;
+    }
+
+    @ExceptionHandler(ProviderNotSupportedException.class)
+    public ResponseEntity<String> handleProviderNotSupportedException(ProviderNotSupportedException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
     @GetMapping("/{provider}/authorize")
