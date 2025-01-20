@@ -1,5 +1,6 @@
 package com.github.deenr.contribu.model;
 
+import com.github.deenr.contribu.enums.GitPlatform;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -17,7 +18,7 @@ public class GitProvider {
 
     @Column
     @Enumerated(EnumType.STRING)
-    private com.github.deenr.contribu.enums.GitProvider provider;
+    private GitPlatform provider;
 
     private LocalDateTime syncedAt;
 
@@ -40,11 +41,11 @@ public class GitProvider {
         this.user = user;
     }
 
-    public com.github.deenr.contribu.enums.GitProvider getProvider() {
+    public GitPlatform getProvider() {
         return provider;
     }
 
-    public void setProvider(com.github.deenr.contribu.enums.GitProvider provider) {
+    public void setProvider(GitPlatform provider) {
         this.provider = provider;
     }
 

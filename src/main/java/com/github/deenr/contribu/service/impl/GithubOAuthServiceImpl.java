@@ -1,6 +1,6 @@
 package com.github.deenr.contribu.service.impl;
 
-import com.github.deenr.contribu.enums.GitProvider;
+import com.github.deenr.contribu.enums.GitPlatform;
 import com.github.deenr.contribu.enums.TokenStatus;
 import com.github.deenr.contribu.service.OAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,12 +32,12 @@ public class GithubOAuthServiceImpl implements OAuthService {
     private String authUrl;
 
     private final UserServiceImpl userService;
-    private final GitProviderServiceImpl gitProviderTokenService;
+    private final GitProviderServiceImpl gitProviderService;
 
     @Autowired
-    GithubOAuthServiceImpl(UserServiceImpl userService, GitProviderServiceImpl gitProviderTokenService) {
+    GithubOAuthServiceImpl(UserServiceImpl userService, GitProviderServiceImpl gitProviderService) {
         this.userService = userService;
-        this.gitProviderTokenService = gitProviderTokenService;
+        this.gitProviderService = gitProviderService;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class GithubOAuthServiceImpl implements OAuthService {
                 "%s?client_id=%s&redirect_uri=%s",
                 authUrl,
                 clientId,
-                redirectUri
+                String.format("%s?provider=%s", redirectUri, "github")
         );
     }
 
@@ -56,6 +56,7 @@ public class GithubOAuthServiceImpl implements OAuthService {
             Map<String, String> body = new HashMap<>();
             body.put("client_id", clientId);
             body.put("client_secret", clientSecret);
+            body.put("redirect_uri", String.format("%s?provider=%s", redirectUri, "github"));
             body.put("code", code);
 
             RestTemplate restTemplate = new RestTemplate();
@@ -66,13 +67,16 @@ public class GithubOAuthServiceImpl implements OAuthService {
             HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
             ResponseEntity<Map> response = restTemplate.postForEntity(accessTokenUrl, request, Map.class);
 
+            System.err.println(response.getStatusCode());
+
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 String accessToken = response.getBody().get("access_token").toString();
 
-                gitProviderTokenService.save(email, GitProvider.GITHUB, accessToken);
+                gitProviderService.save(email, GitPlatform.GITHUB, accessToken);
 
                 return response.getStatusCode();
             }
+
 
             throw new RuntimeException("Unexpected response from GitHub: " + response.getStatusCode());
         } catch (Exception ex) {
@@ -83,8 +87,13 @@ public class GithubOAuthServiceImpl implements OAuthService {
     @Override
     public ResponseEntity<Object> handleCallback(HttpStatusCode statusCode) {
         return ResponseEntity.status(statusCode)
-                .header("Location", clientUrl)
+                .header("Location", "https://google.com")
                 .build();
+    }
+
+    @Override
+    public void removeToken(String email) {
+        gitProviderService.delete(email, GitPlatform.GITHUB);
     }
 
     @Override

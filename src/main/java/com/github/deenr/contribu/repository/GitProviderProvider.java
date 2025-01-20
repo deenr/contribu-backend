@@ -1,5 +1,6 @@
 package com.github.deenr.contribu.repository;
 
+import com.github.deenr.contribu.enums.GitPlatform;
 import com.github.deenr.contribu.model.GitProvider;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -15,7 +16,7 @@ public interface GitProviderProvider extends JpaRepository<GitProvider, Long> {
     @Query("SELECT g FROM GitProvider g WHERE g.user.id = :userId AND g.provider = :provider")
     Optional<GitProvider> getByUserIdAndProvider(
             @Param("userId") Long userId,
-            @Param("provider") com.github.deenr.contribu.enums.GitProvider provider
+            @Param("provider") GitPlatform provider
     );
 
     @Modifying
@@ -25,7 +26,7 @@ public interface GitProviderProvider extends JpaRepository<GitProvider, Long> {
             "WHERE g.user.id = :userId AND g.provider = :provider")
     void updateTokenByUserIdAndProvider(
             @Param("userId") Long userId,
-            @Param("provider") com.github.deenr.contribu.enums.GitProvider provider,
+            @Param("provider") GitPlatform provider,
             @Param("token") String token,
             @Param("syncedAt") LocalDateTime syncedAt
     );
@@ -36,6 +37,6 @@ public interface GitProviderProvider extends JpaRepository<GitProvider, Long> {
     )
     void deleteByUserIdAndProvider(
             @Param("userId") Long userId,
-            @Param("provider") com.github.deenr.contribu.enums.GitProvider provider
+            @Param("provider") GitPlatform provider
     );
 }

@@ -1,6 +1,6 @@
 package com.github.deenr.contribu.enums;
 
-public enum GitProvider {
+public enum GitPlatform {
     GITHUB,
     GITLAB,
     BITBUCKET

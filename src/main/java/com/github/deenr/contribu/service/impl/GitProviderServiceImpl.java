@@ -1,6 +1,7 @@
 package com.github.deenr.contribu.service.impl;
 
 import com.github.deenr.contribu.dto.GitProviderStatusDTO;
+import com.github.deenr.contribu.enums.GitPlatform;
 import com.github.deenr.contribu.enums.TokenStatus;
 import com.github.deenr.contribu.model.GitProvider;
 import com.github.deenr.contribu.model.User;
@@ -38,7 +39,7 @@ public class GitProviderServiceImpl implements GitProviderService {
         User user = userService.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         List<GitProviderStatusDTO> providerStatuses = new ArrayList<>();
-        for (com.github.deenr.contribu.enums.GitProvider provider : com.github.deenr.contribu.enums.GitProvider.values()) {
+        for (GitPlatform provider : GitPlatform.values()) {
             Optional<GitProvider> gitProviderToken = gitProviderProvider.getByUserIdAndProvider(user.getId(), provider);
 
             if (gitProviderToken.isPresent()) {
@@ -69,7 +70,7 @@ public class GitProviderServiceImpl implements GitProviderService {
     }
 
     @Override
-    public GitProvider save(String email, com.github.deenr.contribu.enums.GitProvider provider, String token) {
+    public GitProvider save(String email, GitPlatform provider, String token) {
         User user = userService.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
 
 
@@ -100,7 +101,7 @@ public class GitProviderServiceImpl implements GitProviderService {
     }
 
     @Override
-    public void delete(String email, com.github.deenr.contribu.enums.GitProvider provider) {
+    public void delete(String email, GitPlatform provider) {
         User user = userService.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         gitProviderProvider.deleteByUserIdAndProvider(user.getId(), provider);

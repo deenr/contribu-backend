@@ -32,14 +32,46 @@ public class OAuthController {
         return new ResponseEntity<>(authorizationUrl, HttpStatus.OK);
     }
 
+    @PostMapping("/{provider}/deauthorize")
+    public ResponseEntity<?> deauthorize(@PathVariable String provider, HttpServletRequest request) {
+        try {
+            OAuthService oAuthService = oAuthServiceFactory.getOAuthService(provider);
+
+            if (request.getCookies() == null) {
+                return ResponseEntity.badRequest().body("No cookies found in the request.");
+            }
+
+            Optional<Cookie> cookie = RefreshTokenUtil.getRefreshCookie(request.getCookies());
+            if (cookie.isEmpty()) {
+                return ResponseEntity.badRequest().body("Refresh token cookie not found.");
+            }
+
+            String refreshToken = cookie.get().getValue();
+            String email = JwtService.extractUsername(refreshToken);
+
+            if (email == null || email.isEmpty()) {
+                return ResponseEntity.badRequest().body("Invalid refresh token.");
+            }
+
+            oAuthService.removeToken(email);
+
+            return ResponseEntity.ok("Deauthorization successful.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Invalid provider: " + provider);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while processing the deauthorization request.");
+        }
+    }
+
     @PostMapping("/{provider}/callback")
     public ResponseEntity<Object> callback(@PathVariable String provider, @RequestParam("code") String code, HttpServletRequest request) {
+        System.err.println(provider);
         OAuthService oAuthService = oAuthServiceFactory.getOAuthService(provider);
 
         Optional<Cookie> cookie = RefreshTokenUtil.getRefreshCookie(request.getCookies());
         String refreshToken = cookie.get().getValue();
         String email = JwtService.extractUsername(refreshToken);
-
         HttpStatusCode statusCode = oAuthService.fetchAndSetToken(code, email);
 
         return oAuthService.handleCallback(statusCode);
