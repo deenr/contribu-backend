@@ -1,13 +1,19 @@
 package com.github.deenr.contribu.service;
 
+import com.github.deenr.contribu.util.RefreshTokenUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 public class JwtService {
@@ -44,6 +50,19 @@ public class JwtService {
 
     public static boolean isTokenExpired(String token) {
         return extractAllClaims(token).getExpiration().before(new Date());
+    }
+
+    public static String extractUsernameFromRequest(HttpServletRequest request) {
+        Optional<Cookie> cookie = RefreshTokenUtil.getRefreshCookie(request.getCookies());
+        if (cookie.isEmpty()) {
+            throw new IllegalArgumentException("Missing refresh token");
+        }
+
+        try {
+            return JwtService.extractUsername(cookie.get().getValue());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid refresh token", e);
+        }
     }
 
     private static Claims extractAllClaims(String token) {

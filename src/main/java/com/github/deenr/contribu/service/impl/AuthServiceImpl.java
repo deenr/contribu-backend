@@ -29,14 +29,7 @@ public class AuthServiceImpl implements AuthService {
             throw new EmailAlreadyInUseException("Email is already in use.");
         }
 
-        User user = new User();
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setCreatedAt(LocalDateTime.now());
-
-        User savedUser = userService.save(user);
+        User savedUser = userService.save(firstName, lastName, email, passwordEncoder.encode(password), LocalDateTime.now());
 
         return generateAccessAndRegisterTokens(savedUser.getEmail());
     }
