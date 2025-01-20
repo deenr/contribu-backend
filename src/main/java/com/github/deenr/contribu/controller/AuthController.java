@@ -15,11 +15,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -33,7 +29,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserRegisterResponseDTO> register(@RequestBody @Valid UserLoginDTO userDTO, HttpServletResponse response) {
+    public ResponseEntity<UserRegisterResponseDTO> register(@RequestBody @Valid UserRegisterDTO userDTO, HttpServletResponse response) {
         AccessAndRefreshToken tokens = authService.register(
                 userDTO.getFirstName(),
                 userDTO.getLastName(),
@@ -47,7 +43,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserLoginResponseDTO> login(@RequestBody @Valid UserRegisterDTO userDTO, HttpServletResponse response) {
+    public ResponseEntity<UserLoginResponseDTO> login(@RequestBody @Valid UserLoginDTO userDTO, HttpServletResponse response) {
         AccessAndRefreshToken tokens = authService.login(
                 userDTO.getEmail(),
                 userDTO.getPassword()
